@@ -513,6 +513,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 600 + (150 * index)); // Démarre à 600ms avec un écart de 150ms par carte
     });
 });
+
+
 document.addEventListener('DOMContentLoaded', () => {
     window.TTSAStudioInstance = new TTSAStudio();
+    // 1. Enregistrement du Service Worker pour activer la PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker enregistré avec succès !', reg.scope))
+            .catch(err => console.error('Échec de l\'enregistrement du Service Worker :', err));
+    });
+}
+
+// 2. Optionnel : Déclencher un bouton "Installer" personnalisé dans ton appli
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Empêche la bannière par défaut du navigateur de s'ouvrir immédiatement
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Si tu as un bouton dans ton code avec l'ID "install-app-btn", tu peux l'afficher ici :
+    const installBtn = document.getElementById('install-app-btn');
+    if (installBtn) {
+        installBtn.classList.remove('hidden');
+        
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt(); // Affiche la demande d'installation officielle
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('L\'utilisateur a installé Rudo !');
+                }
+                deferredPrompt = null;
+                installBtn.classList.add('hidden');
+            }
+        });
+    }
+});
+
 });
